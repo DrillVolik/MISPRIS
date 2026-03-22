@@ -21,7 +21,7 @@ type EmobileService interface {
 type BatteryService interface {
 	Create(ctx context.Context, name string, batteryType string,
 		batteryCapacity string, batteryInfo string) (string, error)
-	Update(ctx context.Context, id string, name string, batteryType string, batteryCapacity string, batteryInfo string) (string, error)
+	Update(ctx context.Context, id string, name string, batteryType string, batteryCapacity string, batteryInfo string) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context) ([]domain.Battery, error)
 	GetByID(ctx context.Context, id string) (*domain.Battery, error)
@@ -137,13 +137,21 @@ type Service struct {
 	Body    BodyService
 }
 
-func NewService(db *sqlx.DB, repo *repository.Repository) Service {
+func NewService(db *sqlx.DB, repo *repository.Repository) *Service {
 
 	carcass := NewCarcassService(repo.Carcass)
 	doors := NewDoorsService(repo.Doors)
 	wings := NewWingsService(repo.Wings)
 
+	sensor := NewSensorService(repo.Sensor)
+	wiring := NewWiringService(repo.Wiring)
+	controller := NewControllerService(repo.Controller)
+
 	return &Service{
+		Sensor:      sensor,
+		Wiring:      wiring,
+		Controller:  controller,
+		Electronics: NewElectronicsService(db, repo.Electronics, wiring, controller, sensor),
 
 		Carcass: carcass,
 		Doors:   doors,

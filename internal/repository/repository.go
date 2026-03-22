@@ -47,6 +47,7 @@ type ElectronicsRepository interface {
 	CreateTx(ctx context.Context, tx *sqlx.Tx, e *domain.Electronics) (string, error)
 	Update(ctx context.Context, e *domain.Electronics) error
 	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]*domain.Electronics, error)
 }
 
 type ControllerRepository interface {
