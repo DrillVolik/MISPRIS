@@ -8,7 +8,7 @@ import (
 )
 
 type EmobileService interface {
-	Create(ctx context.Context, id string, name string, powerPointID string,
+	Create(ctx context.Context, name string, powerPointID string,
 		batteryID string, charg_sysID string, chassisID string, bodyID string, electonicsID string) (string, error)
 	Update(ctx context.Context, id string, name string, powerPointID string,
 		batteryID string, charg_sysID string, chassisID string, bodyID string, electonicsID string) error
@@ -19,6 +19,8 @@ type EmobileService interface {
 
 type BatteryService interface {
 	Create(ctx context.Context, name string, batteryType string, batteryCapacity string, batteryInfo string) (string, error)
+	Create(ctx context.Context, name string, batteryType string,
+		batteryCapacity string, batteryInfo string) (string, error)
 	Update(ctx context.Context, id string, name string, batteryType string, batteryCapacity string, batteryInfo string) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context) ([]domain.Battery, error)
@@ -26,15 +28,39 @@ type BatteryService interface {
 }
 
 type BodyService interface {
-	Create(ctx context.Context, id string, carcassID string, doorsID string, wingsID string) (string, error)
+	Create(ctx context.Context, carcassID string, doorsID string, wingsID string) (string, error)
 	Update(ctx context.Context, id string, carcassID string, doorsID string, wingsID string) error
 	Delete(ctx context.Context, id string) error
-	List(ctx context.Context) ([]domain.Battery, error)
-	GetByID(ctx context.Context, id string) (*domain.Battery, error)
+	List(ctx context.Context) ([]domain.Body, error)
+	GetByID(ctx context.Context, id string) (*domain.Body, error)
+}
+
+type CarcassService interface {
+	Create(ctx context.Context, carcassName string, carcassInfo string) (string, error)
+	Update(ctx context.Context, id string, carcassName string, carcassInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Carcass, error)
+	GetByID(ctx context.Context, id string) (*domain.Carcass, error)
+}
+
+type DoorsService interface {
+	Create(ctx context.Context, doorsName string, doorInfo string) (string, error)
+	Update(ctx context.Context, id string, doorsName string, doorInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Doors, error)
+	GetByID(ctx context.Context, id string) (*domain.Doors, error)
+}
+
+type WingsService interface {
+	Create(ctx context.Context, wingsName string, wingsInfo string) (string, error)
+	Update(ctx context.Context, id string, wingsName string, wingsInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Wings, error)
+	GetByID(ctx context.Context, id string) (*domain.Wings, error)
 }
 
 type ChargerService interface {
-	Create(ctx context.Context, id string, chargerID string, connectorID string) (string, error)
+	Create(ctx context.Context, chargerID string, connectorID string) (string, error)
 	Update(ctx context.Context, id string, chargerID string, connectorID string) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context) ([]domain.Charger, error)
@@ -42,7 +68,7 @@ type ChargerService interface {
 }
 
 type ChassisService interface {
-	Create(ctx context.Context, id string, frameID, suspensionID, breakSystemID string) (string, error)
+	Create(ctx context.Context, frameID, suspensionID, breakSystemID string) (string, error)
 	Update(ctx context.Context, id string, frameID, suspensionID, breakSystemID string) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context) ([]domain.Chassis, error)
@@ -50,11 +76,35 @@ type ChassisService interface {
 }
 
 type ElectronicsService interface {
-	Create(ctx context.Context, id string, controllerID, sensorID, wiringID string) (string, error)
+	Create(ctx context.Context, controllerID, sensorID, wiringID string) (string, error)
 	Update(ctx context.Context, id string, controllerID, sensorID, wiringID string) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context) ([]domain.Electronics, error)
 	GetByID(ctx context.Context, id string) (*domain.Electronics, error)
+}
+
+type ControllerService interface {
+	Create(ctx context.Context, controllerName, controllerInfo string) (string, error)
+	Update(ctx context.Context, id string, controllerName, controllerInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Controller, error)
+	GetByID(ctx context.Context, id string) (*domain.Controller, error)
+}
+
+type SensorService interface {
+	Create(ctx context.Context, sensorName string, sensorInfo string) (string, error)
+	Update(ctx context.Context, id string, sensorName string, sensorInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Sensor, error)
+	GetByID(ctx context.Context, id string) (*domain.Sensor, error)
+}
+
+type WiringService interface {
+	Create(ctx context.Context, wiringName string, wiringInfo string) (string, error)
+	Update(ctx context.Context, id string, wiringName string, wiringInfo string) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context) ([]domain.Wiring, error)
+	GetByID(ctx context.Context, id string) (*domain.Wiring, error)
 }
 
 type PowerPointService interface {
@@ -90,29 +140,46 @@ type GearboxService interface {
 }
 
 type Service struct {
-	PowerPoint  PowerPointService
+	PowerPoint PowerPointService
+	//////////////////////////////////////
+
 	Electronics ElectronicsService
-	ChargerSys  ChargerService
-	Chassis     ChassisService
-	Battery     BatteryService
-	Emobile     EmobileService
-	Body        BodyService
-	Engine      EngineService
-	Inverter    InverterService
-	Gearbox     GearboxService
+	Controller  ControllerService
+	Sensor      SensorService
+	Wiring      WiringService
+	//////////////////////////////////////////////
+
+	ChargerSys ChargerService
+	Chassis    ChassisService
+	Battery    BatteryService
+	Emobile    EmobileService
+
+	/////////////////////////////////
+	Carcass CarcassService
+	Doors   DoorsService
+	Wings   WingsService
+	Body    BodyService
 }
 
-func NewService(repo *repository.Repository) Service {
+func NewService(db *sqlx.DB, repo *repository.Repository) *Service {
+
+	carcass := NewCarcassService(repo.Carcass)
+	doors := NewDoorsService(repo.Doors)
+	wings := NewWingsService(repo.Wings)
+
+	sensor := NewSensorService(repo.Sensor)
+	wiring := NewWiringService(repo.Wiring)
+	controller := NewControllerService(repo.Controller)
+
 	return &Service{
-		PowerPoint:  NewPowerPointService(repo.PowerPoint),
-		Electronics: NewElectronicsService(repo.Electronics),
-		ChargerSys:  NewChargerSysService(repo.ChargerSystem),
-		Chassis:     NewChassisService(repo.Chassis),
-		Battery:     NewBatteryService(repo.Battery),
-		Emobile:     NewEmobileService(repo.Emobile),
-		Body:        NewBodyService(repo.Body),
-		Engine:      NewEngineService(repo.Engine),
-		Inverter:    NewInverterService(repo.Inverter),
-		Gearbox:     NewGearboxService(repo.Gearbox),
+		Sensor:      sensor,
+		Wiring:      wiring,
+		Controller:  controller,
+		Electronics: NewElectronicsService(db, repo.Electronics, wiring, controller, sensor),
+
+		Carcass: carcass,
+		Doors:   doors,
+		Wings:   wings,
+		Body:    NewBodyService(db, repo.Body, carcass, doors, wings),
 	}
 }
