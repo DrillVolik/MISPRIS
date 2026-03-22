@@ -12,8 +12,8 @@ type EmobilePostgres struct {
 	db *sqlx.DB
 }
 
-func NewEmobilePostgres(db *sqlx.DB) *ElectronicsPostgres {
-	return &ElectronicsPostgres{
+func NewEmobilePostgres(db *sqlx.DB) *EmobilePostgres {
+	return &EmobilePostgres{
 		db: db,
 	}
 }

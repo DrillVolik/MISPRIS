@@ -174,8 +174,8 @@ type GearboxRepository interface {
 
 type EmobileRepository interface {
 	GetByID(ctx context.Context, id int64) (*domain.Emobile, error)
-	Create(ctx context.Context, emob *domain.Emobile) (int64, error)
-	Update(ctx context.Context, emob *domain.Emobile) error
+	Create(ctx context.Context, tx *sqlx.Tx, emobile *domain.Emobile) (int64, error)
+	Update(ctx context.Context, emobile *domain.Emobile) error
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]*domain.Emobile, error)
 }
